@@ -8,6 +8,10 @@ This tool provides two commands that allow you to select a field in a CONTENTdm 
 
 PHP command-line interface 5+.
 
+## Installation and configuration
+
+Clone this Github repo, or download the zip. No configuration is necessary, but you will probably want to change the value of the `$ws_url` variable in the cdminspect script to be your CONTENTdm server.
+
 ## Usage
 
 There are two steps in generating a report of field values, 1) getting a list of CONTENTdm field 'nicknames' and 2) generating the list of unique values for a specific nickname.
@@ -90,10 +94,18 @@ Ah ha! Looks like using this tool has paid off: the 'Bands' field contains two v
 
 ## Other options
 
-* cdm_url: The full URL to the CONTENTdm server's web API. Can also be configured in the `$ws_url` variable with the cdminspect script.
-* output_file: Path to a file where the output of `--what=values --nicknames=` will be saved. Can be absolute of relative to the cdminspect script. Default is './cdminspect_output.txt'.
-* email: An email address or comma-separated list of email addresses that will be mailed the contents of this file. Only works on systems that allow email from PHP scripts.
-* error_log: Path to a file where errors are logged. Default is './error_log.txt'.
+* `--cdm_url`: The full URL to the CONTENTdm server's web API. Can also be configured in the `$ws_url` variable with the cdminspect script.
+* `--output_file`: Path to a file where the output of `--what=values --nicknames=` will be saved. Can be absolute of relative to the cdminspect script. Default is './cdminspect_output.txt'.
+* `--email`: An email address or comma-separated list of email addresses that will be mailed the contents of this file. Only works on systems that allow email from PHP scripts.
+* `--error_log`: Path to a file where errors are logged. Default is './error_log.txt'.
+
+For example,
+
+```
+php cdminspect --what=values --nickname=bands --alias=vanpunk --output_file=/tmp/vanpunk.bands.txt
+```
+
+etc.
 
 ## Plugins
 
