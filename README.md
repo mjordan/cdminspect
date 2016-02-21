@@ -90,21 +90,20 @@ Ah ha! Looks like using this tool has paid off: the 'Bands' field contains two v
 
 ## Other options
 
-*cdm_url: The full URL to the CONTENTdm server's web API. Can also be configured in the `$ws_url` variable with the cdminspect script.
-*output_file: Path to a file where the output of `--what=values --nicknames=` will be saved. Can be absolute of relative to the cdminspect script. Default is './cdminspect_output.txt'.
-*email: An email address or comma-separated list of email addresses that will be mailed the contents of this file. Only works on systems that allow email from PHP scripts.
-*error_log: Path to a file where errors are logged. Default is './error_log.txt'.
+* cdm_url: The full URL to the CONTENTdm server's web API. Can also be configured in the `$ws_url` variable with the cdminspect script.
+* output_file: Path to a file where the output of `--what=values --nicknames=` will be saved. Can be absolute of relative to the cdminspect script. Default is './cdminspect_output.txt'.
+* email: An email address or comma-separated list of email addresses that will be mailed the contents of this file. Only works on systems that allow email from PHP scripts.
+* error_log: Path to a file where errors are logged. Default is './error_log.txt'.
+
+## Plugins
+
+The main cdminspect script iterates over all the parent-level objects in the specified collection. It delegates actions to all the objects in the collections to plugins. Currently, there are only two plugins, one to get the field nicknames and one to loop through all the objects and get the value from a field. Other plugins could be added if someone can think of another useful task they want to perfom with this tool.
 
 ## Background
 
 This tool was cobbled together in support of Simon Fraser University (SFU) Library's migration from CONTENTdm to Islandora. We needed a way to get an overview of how consistently (or inconsistenly) date values, rights statements, etc. were in our 120+ CONTENTdm collections.
 
-
 cdminspect is not written using modern PHP best practices since it was developed quickly to meet a specific need. But, it does what it promises.
-
-## Plugins
-
-The main cdminspect script iterates over all the parent-level objects in the specified collection. It delegates actions to all the objects in the collections to plugins. Currently, there are only two plugins, one to get the field nicknames and one to loop through all the objects and get the value from a field. Other plugins could be added if someone can think of another useful task they want to perfom with this tool.
 
 ## Future
 
