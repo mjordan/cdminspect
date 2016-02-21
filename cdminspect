@@ -1,0 +1,345 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * CONTENTdm Field Inspector, a tool to grab values from a specific field in a
+ * collection.
+ *
+ * This main script iterates through every parent-level item in a collection; reading
+ * and/or modifying the items is done using plugins.
+ *
+ * Usage: ./cdminspect --what=nicknames --alias=example
+ *
+ * where '--what' is either 'nicknames' or 'values' and '--alias' is the alias of the
+ * CONTENTdm collection you are updating (without the leading slash).
+ */
+
+/*****************************
+ * Get command-line options. *
+ *****************************/
+$options = getopt('', array('cdm_url::', 'what:', 'alias:', 'nickname::', 'email::', 'output_file::', 'error_log::'));
+
+$alias = '/' . $options['alias'];
+$batch_plugin = 'plugins/get_' . $options['what'] . '.plugin';
+
+// URL to the CONTENTdm web services API.
+if (isset($options['cdm_url'])) {
+  $ws_url = trim($options['cdm_url']);
+}
+else {
+  $ws_url = 'http://content.lib.sfu.ca:81/dmwebservices/index.php?q=';
+  // $ws_url = 'http://142.58.129.180:81/dmwebservices/index.php?q=';
+}
+
+if (isset($options['nickname'])) {
+  $nickname = $options['nickname'];
+}
+else {
+  $nickname = NULL;
+}
+
+if (isset($options['error_log'])) {
+  $error_log = trim($options['error_log']);
+}
+else {
+  $error_log = 'error_log.txt';
+}
+
+if (isset($options['output_file'])) {
+  $output_file = trim($options['output_file']);
+}
+else {
+  $output_file = 'cdminspect_output.txt';
+}
+
+if (isset($options['email'])) {
+  $send_mail = TRUE;
+}
+else {
+  $send_mail = FALSE;
+}
+
+/**********************************************************************
+ * Set up some additional values for accessing the CONTENTdm web API. *
+***********************************************************************/
+// Don't change $chunk_size unless CONTENTdm is timing out.
+$chunk_size = 100;
+// Don't change $start_at unless from 1 you are exporting a range of records. If you
+// want to export a range, use the number of the first record in the range.
+$start_at = 1;
+// The last record in subset, not the entire record set. Don't change $last_rec from 0
+// unless you are exporting a subset of records. If you want to export a range, use the
+// number of records in the subset, e.g., if you want to export 200 records, use that value.
+$last_rec = 0;
+// CONTENTdm nicknames for administrative fields.
+$admin_fields = array('fullrs', 'find', 'dmaccess', 'dmimage', 'dmcreated', 'dmmodified', 'dmoclcno', 'dmrecord');
+// Record counter.
+$rec_num = 0;
+// Output subset size
+$output_subset_size = 100;
+
+
+$field_config = get_collection_field_config($alias);
+$query_map = array(
+    'alias' => $alias,
+    'searchstrings' => '0',
+    // We ask for as little possible info at this point since we'll be doing another query
+    // on each item later.
+    'fields' => 'dmcreated',
+    'sortby' => 'dmcreated!dmrecord',
+    'maxrecs' => $chunk_size,
+    'start' => $start_at,
+    // We only want top-level items, not pages/children.
+    'supress' => 1,
+    'docptr' => 0,
+    'suggest' => 0,
+    'facets' => 0,
+    'format' => 'json'
+  );
+
+
+/********************************************************************************************
+ * Perform a preliminary query to determine how many records are in the current collection, *
+ * and to determine the number of queries required to get all the records.                  *
+ ********************************************************************************************/
+
+$prelim_results = query_contentdm($start_at);
+// We add one chunk, then round down using sprintf().
+$num_chunks = $prelim_results['pager']['total'] / $chunk_size + 1;
+$num_chunks = sprintf('%d', $num_chunks);
+// Uncomment these lines to print out some informative eye candy.
+if ($last_rec == 0) {
+  // print "Retrieving " . $prelim_results['pager']['total'] .
+  //  " records from $alias, and processing them in $num_chunks chunks of $chunk_size records each.\n";
+} else {
+  // print "Retrieving $last_rec records starting at $start_at of " . $prelim_results['pager']['total'] . " records\n";
+}
+// Die if there are no records.
+if (!$prelim_results['pager']['total']) {
+  print "Sorry, CONTENTdm didn't return any records.\n";
+  exit;
+}
+
+/*****************************************************************************************************
+ * Main program loop is handled by the plugin, which is invoked here and performs as many queries as *
+ * required to get all the records in the collection identified by the alias.                        *
+ ****************************************************************************************************/
+
+// Include the indicated plugin, which contains the run_batch() function.
+include $batch_plugin;
+
+run_batch($prelim_results['pager']['total'], $num_chunks, $nickname);
+
+/*************
+ * Functions *
+ ************/
+
+/**
+ * Query CONTENTdm with the values in $query_map and return an array of records.
+ */
+function query_contentdm($start_at, $current_chunk = NULL, $num_chunks = NULL) {
+  global $ws_url;
+  global $query_map;
+  global $error_log;
+  global $last_rec;
+  $qm = $query_map;
+  $query = $ws_url . 'dmQuery'. $qm['alias'] . '/'. $qm['searchstrings'] . '/'. $qm['fields'] . '/'.
+    $qm['sortby'] . '/'. $qm['maxrecs'] . '/'. $start_at . '/'. $qm['supress'] . '/'. $qm['docptr'] . '/'.
+    $qm['suggest'] . '/'. $qm['facets'] . '/' . $qm['format'];
+
+  // Query CONTENTdm and return records; if failure, log problem.
+  if ($json = file_get_contents($query, false, NULL)) {
+    return json_decode($json, true);
+  } else {
+    $message = date('c') . "\t". 'Query failed:' . "\t" . $query . "\n";
+    error_log($message, 3, $error_log);
+    return FALSE;
+  }
+}
+
+/**
+ * Gets the item's info from CONTENTdm. $alia needs to include the leading '/'.
+ */
+function get_item_info($alias, $pointer) {
+  global $ws_url;
+  $query_url = $ws_url . 'dmGetItemInfo' . $alias . '/' . $pointer . '/json';
+  $response = file_get_contents($query_url);
+  $item_info = json_decode($response, TRUE);
+  if (is_array($item_info)) {
+    return $item_info;
+  }
+  else {
+    return FALSE;
+  }
+
+}
+
+/**
+ * Gets a compound item's children pointers. $alias needs to include the leading '/'.
+ */
+function get_children_pointers($alias, $pointer) {
+  global $ws_url;
+  $query_url = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' .  $pointer . '/json';
+  $item_structure = file_get_contents($query_url);
+  $item_structure = json_decode($item_structure, TRUE);
+  if (isset($item_structure['page'])) {
+    $children = $item_structure['page'];
+  }
+  else {
+    return array();
+  }
+  $children_pointers = array();
+  foreach ($children as $child) {
+    $children_pointers[] = $child['pageptr'];
+  }
+  return $children_pointers;
+}
+
+/**
+ * Gets the item's parent pointer, in an array with the key 'parent. Returns '-1' if there is no parent..
+ */
+function get_parent_pointer($alias, $pointer) {
+  global $ws_url;
+  $query = $ws_url . 'GetParent' . $alias . '/' . $pointer . '/json';
+  $json = file_get_contents($query, false, NULL);
+  return json_decode($json, true);
+}
+
+/**
+ * Gets the collection's field configuration from CONTENTdm.
+ */
+function get_collection_field_config($alias) {
+  global $ws_url;
+  $query = $ws_url . 'dmGetCollectionFieldInfo' . $alias . '/json';
+  $json = file_get_contents($query, false, NULL);
+  return json_decode($json, true);
+}
+
+/**
+ * Gets an array containing field nicknames as members. Takes
+ * the array returned by get_collection_field_config() as its first paramter.
+ * Optional array of elements in field config are returned in an associative
+ * array. Returns a simple array if no optional elements are supplied.
+ */
+function get_fields($field_config, $options = array()) {
+  // print "Field config"; print_r($field_config);
+  $fields = array();
+  foreach ($field_config as $field) {
+    $fields[] = $field['nick'];
+  }
+  return $fields;
+}
+
+/**
+ * Given the value of a field nick (e.g., 'date'), returns an array of field attribute.
+ * $attributes is an optional list of field configuration attibutes to return.
+ */
+/*
+Array
+(
+    [name] => Birth date
+    [nick] => date
+    [type] => TEXT
+    [size] => 0
+    [find] => i8
+    [req] => 0
+    [search] => 1
+    [hide] => 0
+    [vocdb] =>
+    [vocab] => 0
+    [dc] => dateb
+    [admin] => 0
+    [readonly] => 0
+)
+*/
+function get_field_attribute($nick, $attributes = array()) {
+  global $field_config;
+  // Loop through every field defined in $field_config.
+  for ($i = 0; $i < count($field_config); $i++) {
+    // Pick out the field identified by the incoming 'nick' attribute.
+    if ($field_config[$i]['nick'] == $nick) {
+      // If we only want selected attributes, filter out the ones we don't want.
+      if (count($attributes)) {
+        // If we are going to modify this field's config info, we need to make a
+        // copy since $field_config is a global variable.
+        $reduced_field_config = $field_config[$i];
+        foreach ($reduced_field_config as $key => $value) {
+          if (!in_array($key, $attributes)) {
+            unset($reduced_field_config[$key]);
+          }
+        }
+        return $reduced_field_config;
+      }
+      else {
+        // If we didn't filter out specific attributes, return the whole thing.
+        return $field_config[$i];
+      }
+    }
+  }
+}
+
+/**
+ * Get the CONTENTdm Dublin Core field mappings.
+ */
+function get_dc_field_info() {
+  global $ws_url;
+  $request = $ws_url . 'dmGetDublinCoreFieldInfo/json';
+  $json = file_get_contents($request, false, NULL);
+  $raw_dc_field_info = json_decode($json, TRUE);
+
+  // Convert from an anonymous array to a nick => name array.
+  $dc_fields = array();
+  foreach ($raw_dc_field_info as $field) {
+    $dc_fields[$field['nick']] = $field['name'];
+  }
+  return $dc_fields;
+}
+
+/**
+ * Get the CONTENTdm Dublin Core field mappings.
+ */
+function get_collection_info($alias) {
+  global $ws_url;
+  $request = $ws_url . 'dmGetCollectionParameters' . $alias . '/json';
+  $json = file_get_contents($request, false, NULL);
+  $collection_info = json_decode($json, TRUE);
+  return $collection_info;
+}
+
+function print_values($values) {
+  global $output_file;
+  global $newline;
+  global $alias;
+  global $nickname;
+  if ($newline) {
+    $line_separator = PHP_EOL . PHP_EOL;
+  }
+  else{
+    $line_separator = PHP_EOL;
+  }
+
+  if (isset($output_file)) {
+    $header = "Unique values for the '$nickname' field in the '$alias' collection.";
+    file_put_contents($output_file, $header . $line_separator, FILE_APPEND);
+  }
+  foreach ($values as $value) {
+    // CONTENTdm uses arrays for empty field values.
+    if (is_array($value)) {
+      $value = '[blank]';
+    }
+    print trim($value) . $line_separator;
+    if (isset($output_file)) {
+      file_put_contents($output_file, trim($value) . $line_separator, FILE_APPEND);
+    }
+  }
+}
+
+/**
+ * Send the output of a script to an email adddress.
+ */
+function field_inspector_mail($to = NULL, $subject = 'Email from the CONTENTdm Field Inspector', $path = '') {
+  $body = file_get_contents($path);
+  $body .= "\nEnd of report";
+  mail($to, $subject, $body);
+  print "Results have been mailed to $to with subject \"$subject\"\n";
+}

@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * cdminspect plugin to get field nicknames for a CONTENTdm collection.
+ */
+
+/**
+ *
+ */
+function run_batch($total_recs, $num_chunks) {
+  global $alias;
+
+  $field_config = get_collection_field_config($alias);
+  $collection_info  = get_collection_info($alias);
+  print PHP_EOL . "Field nicknames for " . $collection_info['name'] . PHP_EOL . PHP_EOL;
+
+  print "Field label => field nickname" . PHP_EOL;
+  print "=============================" . PHP_EOL;
+  foreach ($field_config as $field) {
+    print $field['name'] . ' => ' . $field['nick'] . PHP_EOL;
+  }
+  print PHP_EOL;
+}

@@ -1,0 +1,96 @@
+## Usage
+
+There are two steps in generating a report of field values, 1) getting a list of CONTENTdm field 'nicknames' and 2) generating the list of unique values for a specific nickname.
+
+For example, to get a list of the field nicknames for a collection, run this command:
+
+```
+./run get_nicknames.plugin alias
+```
+
+
+where 'alias' is the CONTENTdm collection's alias (string identifying a particular collection) without the leading `/`). This will produce a list of fields and their nicknames:
+
+```
+./run get_nicknames.plugin vanpunk_1
+
+Field nicknames for Vancouver Punk Rock Collection
+
+Field label => field nickname
+=============================
+Title => title
+Bands => bands
+Poster Artist => poster
+Description => descri
+Date => date
+Display date => displa
+Type => type
+Format => format
+Identifier => identi
+Producer or Presenter => produc
+Language => langua
+Venue => venue
+Dimensions (inches) => dimens
+Poster text => postea
+Rights => rights
+Cover Artist => cover
+Publisher => publis
+Editor => editor
+Author => author
+Subjects => subjec
+Place => place
+Full text => full
+Archival file => fullrs
+OCLC number => dmoclcno
+Date created => dmcreated
+Date modified => dmmodified
+CONTENTdm number => dmrecord
+CONTENTdm file name => find
+```
+
+Then, to generate the list of unique values in a field, run the following command
+
+```
+./run get_field_values.plugin alias nickname email@address.com
+```
+
+Running this command to get a list of all the unique values from the 'bands' field ('bands' is the nickname, to the right of the human-readable field name 'Bands') for the Vancouver Punk Rock Collection, and emailing the list to mjordan@sfu.ca,  would look like this:
+
+```
+./run get_field_values.plugin vanpunk_1 bands mjordan@sfu.ca
+```
+
+A sample of the output from this particular command is:
+
+```
+The Diefenbakers
+The Dijits
+The Dils
+The Dinnettes
+The Dishrags
+The Dragons
+The Droogs
+Thee Atoms
+The Eddy Dutchman Jazz Trio
+The Edsells
+The Enemy
+The Enigmas
+The Escorts
+The Evaporators
+The Exploited
+The Explosions
+The Fabulous Wallies
+The Fabulous Wallys
+The Fartz
+The Fastbacks
+The Feederz
+```
+Ah ha! Looks like using this tool has paid off: the 'Bands' field contains two versions of 'The Fabulous Wallies.'
+
+## Background
+
+This tool was cobbled together in support of Simon Fraser University (SFU) Library's migration from CONTENTdm to Islandora. It's not written using modern PHP best practices since it was developed to meet a specific need.
+
+## Future
+
+Once SFU has migrated away from CONTENTdm, its staff won't have any use for this utility... but that's not to say that it should be abandoned. Perhaps some other CONTENTdm site will take it on and make it more useful.
