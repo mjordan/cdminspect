@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * cdminspect plugin to get the pointers of all parent-level objects in
+ * a collection.
+ */
+
+/**
+ */
+function run_batch($total_recs, $num_chunks) {
+  global $start_at;
+  global $rec_num;
+  global $chunk_size;
+  global $last_rec;
+  global $alias;
+  global $output_file_path;
+  global $email_address;
+
+  print PHP_EOL . "Retrieving object pointers for the '$alias' collection..." . PHP_EOL;
+
+  $pointers = array();
+  for ($processed_chunks = 1; $processed_chunks <= $num_chunks; $processed_chunks++) {
+    if (!$results = query_contentdm($start_at, $processed_chunks, $num_chunks)) {
+      print "Could not connect to CONTENTdm to start retrieving chunk starting at record $start_at, moving on to next chunk" . PHP_EOL;
+    }
+    $start_at = $chunk_size * $processed_chunks + 1;
+    foreach ($results['records'] as $results_record) {
+      $rec_num++;
+      print '.';
+
+      $pointers[] = $results_record['pointer'];
+
+      if ($last_rec !== 0) {
+        if ($rec_num == $last_rec) {
+          exit;
+        }
+      }
+    }
+    // If the entire set of records was exported, dislay a summary.
+    if ($rec_num == $total_recs) {
+      print PHP_EOL;
+      print_output($pointers);
+    }
+  }
+  if (isset($email_address)) {
+    $subject = "CONTENTdm Field Inspector report of object pointers for the '$alias' collection";
+
+    field_inspector_mail($email_address, $subject, $output_file);
+  }
+}
