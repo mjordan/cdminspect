@@ -211,7 +211,7 @@ Once SFU has migrated away from CONTENTdm, its staff won't have any use for this
 
 ## License
 
-GPL 3.
+Public domain.
 
 ## Maintainer
 
