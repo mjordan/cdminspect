@@ -22,7 +22,9 @@ Clone this Github repo, or download the zip. No configuration is necessary, but 
 
 ## Usage
 
-All commands require the `--what` option (which tells cdminsect what to inspect) and the `--alias` option (which tells it what collection to inspect). Specific examples follow.
+All commands require the `--what` option (which tells cdminsect what to inspect) and the `--alias` option (which tells it what collection to inspect). Specific examples follow. The alias is the string which identifies a particular CONTENTdm collection and can be found in the URL for collections and objects within a collection. For example, the alias in the following CONTENTdm collection URL is 'vanpunk':
+
+`http://content.lib.sfu.ca/cdm/landingpage/collection/vanpunk`
 
 ### Metadata field values
 
@@ -105,7 +107,7 @@ For example, to get a list of the field nicknames for a collection, run this com
 
 ```php cdminspect --what=nicknames --alias=vanpunk```
 
-where the value of `--alias` is the CONTENTdm collection's alias (string identifying a particular collection) without the leading `/`). This will produce a list of fields and their nicknames:
+This command will produce a list of fields and their nicknames:
 
 ```
 Field nicknames for Vancouver Punk Rock Collection
