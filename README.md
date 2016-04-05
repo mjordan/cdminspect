@@ -22,6 +22,8 @@ Clone this Github repo, or download the zip. No configuration is necessary, but 
 
 ## Usage
 
+All commands require the `--what` option (which tells cdminsect what to inspect) and the `--alias` option (which tells it what collection to inspect). Specific examples follow.
+
 ### Metadata field values
 
 Running cdminspect with `--what=pointers` will generate a simple list of object pointers:
