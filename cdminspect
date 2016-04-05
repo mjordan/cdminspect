@@ -2,11 +2,11 @@
 <?php
 
 /**
- * CONTENTdm Field Inspector, a tool to grab values from a specific field in a
- * collection.
+ * CONTENTdm Field Inspector, tool to a produce reports of various types about
+ * CONTENTdm collections.
  *
- * This main script iterates through every parent-level item in a collection; reading
- * and/or modifying the items is done using plugins.
+ * This main script iterates through every parent-level object in a collection; getting
+ * information about the objects is done using plugins.
  *
  * Usage: ./cdminspect --what=nicknames --alias=example
  *
@@ -28,7 +28,6 @@ if (isset($options['cdm_url'])) {
 }
 else {
   $ws_url = 'http://content.lib.sfu.ca:81/dmwebservices/index.php?q=';
-  // $ws_url = 'http://142.58.129.180:81/dmwebservices/index.php?q=';
 }
 
 if (isset($options['nickname'])) {
@@ -83,13 +82,13 @@ $field_config = get_collection_field_config($alias);
 $query_map = array(
     'alias' => $alias,
     'searchstrings' => '0',
-    // We ask for as little possible info at this point since we'll be doing another query
+    // We query for as little possible info at this point since we'll be doing another query
     // on each item later.
     'fields' => 'dmcreated',
     'sortby' => 'dmcreated!dmrecord',
     'maxrecs' => $chunk_size,
     'start' => $start_at,
-    // We only want top-level items, not pages/children.
+    // We only want parent-level items, not pages/children.
     'supress' => 1,
     'docptr' => 0,
     'suggest' => 0,
@@ -107,6 +106,7 @@ $prelim_results = query_contentdm($start_at);
 // We add one chunk, then round down using sprintf().
 $num_chunks = $prelim_results['pager']['total'] / $chunk_size + 1;
 $num_chunks = sprintf('%d', $num_chunks);
+
 // Uncomment these lines to print out some informative eye candy.
 if ($last_rec == 0) {
   // print "Retrieving " . $prelim_results['pager']['total'] .
@@ -114,6 +114,7 @@ if ($last_rec == 0) {
 } else {
   // print "Retrieving $last_rec records starting at $start_at of " . $prelim_results['pager']['total'] . " records\n";
 }
+
 // Die if there are no records.
 if (!$prelim_results['pager']['total']) {
   print "Sorry, CONTENTdm didn't return any records.\n";
@@ -171,7 +172,6 @@ function get_item_info($alias, $pointer) {
   else {
     return FALSE;
   }
-
 }
 
 /**
@@ -196,7 +196,7 @@ function get_children_pointers($alias, $pointer) {
 }
 
 /**
- * Gets the item's parent pointer, in an array with the key 'parent. Returns '-1' if there is no parent..
+ * Gets the item's parent pointer, in an array with the key 'parent. Returns '-1' if there is no parent.
  */
 function get_parent_pointer($alias, $pointer) {
   global $ws_url;
@@ -206,7 +206,7 @@ function get_parent_pointer($alias, $pointer) {
 }
 
 /**
- * Gets the item's parent pointer, in an array with the key 'parent. Returns '-1' if there is no parent..
+ * Gets the item's compound info. "code" contains '-2' if the item is not compound.
  */
 function get_compound_object_info($alias, $pointer) {
   global $ws_url;
@@ -316,6 +316,10 @@ function get_collection_info($alias) {
   return $collection_info;
 }
 
+/**
+ * Print out the array of results from the plugin both to STDOUT
+ * and to the output file.
+ */
 function print_output($values) {
   global $output_file;
   global $newline;

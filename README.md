@@ -1,4 +1,6 @@
-# CONTENTdm Field Inspector, a tool to a produce reports of various types about CONTENTdm collections.
+# CONTENTdm Field Inspector
+
+A tool to a produce reports of various types about CONTENTdm collections.
 
 ## Overview
 
@@ -27,7 +29,7 @@ Running cdminspect with `--what=pointers` will generate a simple list of object 
 ```php cdminspect --what=pointers --alias=vanpunk```
 
 ```
-Retrieving object pointers for the '/vanpunk_1' collection...
+Retrieving object pointers for the '/vanpunk' collection...
 ..................................................................
 872
 905
@@ -205,7 +207,7 @@ Once SFU has migrated away from CONTENTdm, its staff won't have any use for this
 
 ## License
 
-GPL3.
+GPL 3.
 
 ## Maintainer
 
