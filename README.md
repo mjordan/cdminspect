@@ -1,4 +1,4 @@
-# CONTENTdm Field Inspector
+# CONTENTdm Collection Inspector
 
 A tool to a produce reports of various types about CONTENTdm collections.
 
