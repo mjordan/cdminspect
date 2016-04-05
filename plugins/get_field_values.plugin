@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * cdminspect plugin to get the unique values in a field in a CONTENTdm collection.
+ */
+
+/**
+ */
+function run_batch($total_recs, $num_chunks) {
+  global $start_at;
+  global $rec_num;
+  global $chunk_size;
+  global $last_rec;
+  global $nickname;
+  global $alias;
+  global $output_file_path;
+  global $email_address;
+
+  $field_values = array();
+
+  print PHP_EOL . "Analysing values for the '$nickname' field in the '$alias' collection..." . PHP_EOL;
+
+  for ($processed_chunks = 1; $processed_chunks <= $num_chunks; $processed_chunks++) {
+    if (!$results = query_contentdm($start_at, $processed_chunks, $num_chunks)) {
+      print "Could not connect to CONTENTdm to start retrieving chunk starting at record $start_at, moving on to next chunk" . PHP_EOL;
+    }
+    $start_at = $chunk_size * $processed_chunks + 1;
+    foreach ($results['records'] as $results_record) {
+      $rec_num++;
+      print '.';
+
+      // This function, defined in this plugin, handles each record.
+      $field_values = process_item($results_record, $nickname);
+
+      if ($last_rec !== 0) {
+        if ($rec_num == $last_rec) {
+          exit;
+        }
+      }
+    }
+    // If the entire set of records was exported, dislay a summary.
+    if ($rec_num == $total_recs) {
+      print PHP_EOL;
+      print "Unique values in the '$nickname' field in the '$alias' collection:" . PHP_EOL . PHP_EOL;
+      print_output($field_values);
+    }
+  }
+  if (isset($email_address)) {
+    $subject = "CONTENTdm Field Inspector report of values for the '$nickname' field in the '$alias' collection";
+    field_inspector_mail($email_address, $subject, $output_file);
+  }
+}
+
+/**
+ * Processes each record in the browse results.
+ */
+function process_item($results_record, $nickname) {
+  global $admin_fields;
+  $item_info = get_item_info($results_record['collection'], $results_record['pointer']);
+
+  static $seen_values = array();
+
+  if (is_array($item_info[$nickname])) {
+    $item_info[$nickname] = '[blank]';
+  }
+
+  $exploded_value = explode(';', $item_info[$nickname]);
+  foreach ($exploded_value as &$value) {
+    $value = trim($value);
+    if (!in_array($value, $seen_values)) {
+      $seen_values[] = $value;
+    }
+  }
+
+  natcasesort($seen_values);
+
+  return $seen_values;
+}
+

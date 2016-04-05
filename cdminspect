@@ -206,6 +206,16 @@ function get_parent_pointer($alias, $pointer) {
 }
 
 /**
+ * Gets the item's parent pointer, in an array with the key 'parent. Returns '-1' if there is no parent..
+ */
+function get_compound_object_info($alias, $pointer) {
+  global $ws_url;
+  $query = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' . $pointer . '/json';
+  $json = file_get_contents($query, false, NULL);
+  return json_decode($json, true);
+}
+
+/**
  * Gets the collection's field configuration from CONTENTdm.
  */
 function get_collection_field_config($alias) {
@@ -306,7 +316,7 @@ function get_collection_info($alias) {
   return $collection_info;
 }
 
-function print_values($values) {
+function print_output($values) {
   global $output_file;
   global $newline;
   global $alias;
@@ -319,7 +329,7 @@ function print_values($values) {
   }
 
   if (isset($output_file)) {
-    $header = "Unique values for the '$nickname' field in the '$alias' collection.";
+    $header = "cdminspect output for the '$alias' collection.";
     file_put_contents($output_file, $header . $line_separator, FILE_APPEND);
   }
   foreach ($values as $value) {

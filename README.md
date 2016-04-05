@@ -1,12 +1,18 @@
-# CONTENTdm Field Inspector, a tool to get values from a specific field in a collection.
+# CONTENTdm Field Inspector, a tool to a produce reports of various types about CONTENTdm collections.
 
 ## Overview
 
-This tool provides two commands that allow you to select a field in a CONTENTdm collection and get a list of all unique values in that field.
+This tool provides several commands that allow you to:
+
+1.  get a list of the pointers for all the objects in a collection.
+2.  get a list of the file types (extensions) for simple CONTENTdm objects or the document type for compound objects in a collection.
+3.  select a metadata field in a CONTENTdm collection and get a list of all unique values in that field.
+
+Only objects that are parent-level (that is, objects that are not children of CONTENTdm compound objects) are inspected.
 
 ## Requirements
 
-PHP command-line interface 5+.
+PHP 5+ command-line interface.
 
 ## Installation and configuration
 
@@ -14,7 +20,82 @@ Clone this Github repo, or download the zip. No configuration is necessary, but 
 
 ## Usage
 
-There are two steps in generating a report of field values, 1) getting a list of CONTENTdm field 'nicknames' and 2) generating the list of unique values for a specific nickname.
+### Metadata field values
+
+Running cdminspect with `--what=pointers` will generate a simple list of object pointers:
+
+```php cdminspect --what=pointers --alias=vanpunk```
+
+```
+Retrieving object pointers for the '/vanpunk_1' collection...
+..................................................................
+872
+905
+937
+954
+975
+992
+1009
+1026
+1039
+1058
+```
+
+and so on.
+
+### Object types
+
+To generate a report of the type of compound documents in a collection, use 'object_type' as the value of the  `--what` option:
+
+```
+php cdminspect --what=object_type --alias=aldine
+```
+
+The output contains one row per object, with the object's pointer, wheterh or not it is compound or simple, and the document type seperated by commas:
+
+```
+Analysing object types for the '/aldine' collection...
+.....................
+240,compound,Document
+645,compound,Document
+1294,compound,Document
+1395,compound,Document
+1584,compound,Document
+1859,compound,Document
+2294,compound,Document
+2608,compound,Document
+3202,compound,Document
+3476,compound,Document
+3977,compound,Document
+4342,compound,Document
+4871,compound,Document
+5180,compound,Document
+5353,compound,Document
+5738,compound,Document
+6323,compound,Document
+6489,compound,Document
+7374,compound,Document
+7893,compound,Document
+8593,compound,Document
+```
+
+The output for simple (i.e., single-file) objects shows the extension of the file:
+
+```
+1614,simple,jp2
+1615,simple,jp2
+1616,simple,jp2
+1617,simple,jp2
+1618,simple,jp2
+1619,simple,jp2
+1620,simple,jpg
+1621,simple,jpg
+1622,simple,pdf
+```
+
+### Metadata field values
+
+Generating a report of field values involves two steps, 1) getting a list of CONTENTdm field 'nicknames' and 2) generating the list of unique values for a specific nickname.
 
 For example, to get a list of the field nicknames for a collection, run this command:
 
@@ -60,7 +141,7 @@ CONTENTdm file name => find
 Then, to generate the list of unique values in a field, run the following command
 
 ```
-php cdminspect --what=values --nickname=bands --alias=vanpunk
+php cdminspect --what=field_values --nickname=bands --alias=vanpunk
 ```
 
 Running this command to get a list of all the unique values from the 'bands' field ('bands' is the nickname, to the right of the human-readable field name 'Bands') for the Vancouver Punk Rock Collection.
@@ -91,6 +172,7 @@ The Fastbacks
 The Feederz
 ```
 Ah ha! Looks like using this tool has paid off: the 'Bands' field contains two versions of 'The Fabulous Wallies.'
+
 
 ## Other options
 
@@ -128,6 +210,3 @@ GPL3.
 ## Maintainer
 
 * [Mark Jordan](https://github.com/mjordan)
-
-
-
