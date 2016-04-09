@@ -22,15 +22,15 @@ Clone this Github repo, or download the zip. No configuration is necessary, but 
 
 ## Usage
 
-All commands require the `--what` option (which tells cdminsect what to inspect) and the `--alias` option (which tells it what collection to inspect). Specific examples follow. The alias is the string which identifies a particular CONTENTdm collection and can be found in the URL for collections and objects within a collection. For example, the alias in the following CONTENTdm collection URL is 'vanpunk':
+All commands require the `--inspect` option (which tells cdminsect what to inspect) and the `--alias` option (which tells it what collection to inspect). Specific examples follow. The alias is the string which identifies a particular CONTENTdm collection and can be found in the URL for collections and objects within a collection. For example, the alias in the following CONTENTdm collection URL is 'vanpunk':
 
 `http://content.lib.sfu.ca/cdm/landingpage/collection/vanpunk`
 
 ### Metadata field values
 
-Running cdminspect with `--what=pointers` will generate a simple list of object pointers:
+Running cdminspect with `--inspect=pointers` will generate a simple list of object pointers:
 
-```php cdminspect --what=pointers --alias=vanpunk```
+```php cdminspect --inspect=pointers --alias=vanpunk```
 
 ```
 Retrieving object pointers for the '/vanpunk' collection...
@@ -51,10 +51,10 @@ and so on.
 
 ### Object types
 
-To generate a report of the type of compound documents in a collection, use 'object_type' as the value of the  `--what` option:
+To generate a report of the type of compound documents in a collection, use 'object_type' as the value of the  `--inspect` option:
 
 ```
-php cdminspect --what=object_type --alias=aldine
+php cdminspect --inspect=object_type --alias=aldine
 ```
 
 The output contains one row per object, with the object's pointer, wheterh or not it is compound or simple, and the document type seperated by commas:
@@ -105,7 +105,7 @@ Generating a report of field values involves two steps, 1) getting a list of CON
 
 For example, to get a list of the field nicknames for a collection, run this command:
 
-```php cdminspect --what=nicknames --alias=vanpunk```
+```php cdminspect --inspect=nicknames --alias=vanpunk```
 
 This command will produce a list of fields and their nicknames:
 
@@ -147,7 +147,7 @@ CONTENTdm file name => find
 Then, to generate the list of unique values in a field, run the following command
 
 ```
-php cdminspect --what=field_values --nickname=bands --alias=vanpunk
+php cdminspect --inspect=field_values --nickname=bands --alias=vanpunk
 ```
 
 Running this command to get a list of all the unique values from the 'bands' field ('bands' is the nickname, to the right of the human-readable field name 'Bands') for the Vancouver Punk Rock Collection.
@@ -190,14 +190,14 @@ Ah ha! Looks like using this tool has paid off: the 'Bands' field contains two v
 For example,
 
 ```
-php cdminspect --what=values --nickname=bands --alias=vanpunk --output_file=/tmp/vanpunk.bands.txt
+php cdminspect --inspect=values --nickname=bands --alias=vanpunk --output_file=/tmp/vanpunk.bands.txt
 ```
 
 etc.
 
 ## Plugins
 
-The main cdminspect script iterates over all the parent-level objects in the specified collection. It delegates actions to all the objects in the collections to plugins. Each of the values for `--what` (pointers, object_type, nicknames, and field_values) has its own plugin. Other plugins could be added if someone can think of another useful task they want to perfom with this tool.
+The main cdminspect script iterates over all the parent-level objects in the specified collection. It delegates actions to all the objects in the collections to plugins. Each of the values for `--inspect` (pointers, object_type, nicknames, and field_values) has its own plugin. Other plugins could be added if someone can think of another useful task they want to perfom with this tool.
 
 ## Background
 

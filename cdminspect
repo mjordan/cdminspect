@@ -8,19 +8,16 @@
  * This main script iterates through every parent-level object in a collection; getting
  * information about the objects is done using plugins.
  *
- * Usage: ./cdminspect --what=nicknames --alias=example
- *
- * where '--what' is either 'nicknames' or 'values' and '--alias' is the alias of the
- * CONTENTdm collection you are updating (without the leading slash).
+ * See README.md for usage examples.
  */
 
 /*****************************
  * Get command-line options. *
  *****************************/
-$options = getopt('', array('cdm_url::', 'what:', 'alias:', 'nickname::', 'email::', 'output_file::', 'error_log::'));
+$options = getopt('', array('cdm_url::', 'inspect:', 'alias:', 'nickname::', 'email::', 'output_file::', 'error_log::'));
 
 $alias = '/' . $options['alias'];
-$batch_plugin = 'plugins/get_' . $options['what'] . '.plugin';
+$batch_plugin = 'plugins/get_' . $options['inspect'] . '.plugin';
 
 // URL to the CONTENTdm web services API.
 if (isset($options['cdm_url'])) {
