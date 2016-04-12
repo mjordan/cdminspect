@@ -26,22 +26,17 @@ function run_batch($total_recs, $num_chunks) {
     $start_at = $chunk_size * $processed_chunks + 1;
     foreach ($results['records'] as $results_record) {
       $rec_num++;
-      print '.';
+      print_progress_bar($total_recs, $rec_num);
 
       // This function, defined in this plugin, handles each record.
-      $type_row = process_item($results_record, $nickname);
-      $rows[] = $type_row;
+      $type_row = process_item($results_record);
+      print_output($type_row);
 
       if ($last_rec !== 0) {
         if ($rec_num == $last_rec) {
           exit;
         }
       }
-    }
-    // If the entire set of records was exported, dislay a summary.
-    if ($rec_num == $total_recs) {
-      print PHP_EOL;
-      print_output($rows);
     }
   }
   if (isset($email_address)) {
@@ -54,7 +49,7 @@ function run_batch($total_recs, $num_chunks) {
 /**
  * Processes each record in the browse results.
  */
-function process_item($results_record, $nickname) {
+function process_item($results_record) {
   $compound_info = get_compound_object_info($results_record['collection'], $results_record['pointer']);
   if (isset($compound_info['code'])) {
     $item_info = get_item_info($results_record['collection'], $results_record['pointer']);

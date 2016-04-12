@@ -26,20 +26,13 @@ function run_batch($total_recs, $num_chunks) {
     $start_at = $chunk_size * $processed_chunks + 1;
     foreach ($results['records'] as $results_record) {
       $rec_num++;
-      print '.';
-
-      $pointers[] = $results_record['pointer'];
-
+      print_progress_bar($total_recs, $rec_num);
+      print_output($results_record['pointer']);
       if ($last_rec !== 0) {
         if ($rec_num == $last_rec) {
           exit;
         }
       }
-    }
-    // If the entire set of records was exported, dislay a summary.
-    if ($rec_num == $total_recs) {
-      print PHP_EOL;
-      print_output($pointers);
     }
   }
   if (isset($email_address)) {

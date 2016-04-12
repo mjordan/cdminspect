@@ -27,22 +27,17 @@ function run_batch($total_recs, $num_chunks) {
     $start_at = $chunk_size * $processed_chunks + 1;
     foreach ($results['records'] as $results_record) {
       $rec_num++;
-      print '.';
+      print_progress_bar($total_recs, $rec_num);
 
       // This function, defined in this plugin, handles each record.
       $field_values = process_item($results_record, $nickname);
+      print_output($field_values);
 
       if ($last_rec !== 0) {
         if ($rec_num == $last_rec) {
           exit;
         }
       }
-    }
-    // If the entire set of records was exported, dislay a summary.
-    if ($rec_num == $total_recs) {
-      print PHP_EOL;
-      print "Unique values in the '$nickname' field in the '$alias' collection:" . PHP_EOL . PHP_EOL;
-      print_output($field_values);
     }
   }
   if (isset($email_address)) {
