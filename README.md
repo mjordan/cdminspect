@@ -8,7 +8,8 @@ This tool provides several commands that allow you to:
 
 1.  get a list of the pointers for all the objects in a collection.
 2.  get a list of the file types (extensions) for simple CONTENTdm objects or the document type for compound objects in a collection.
-3.  select a metadata field in a CONTENTdm collection and get a list of all unique values in that field.
+3.  retrieve the .cpd (compound structure) files for all compound objects in a collection.
+4.  select a metadata field in a CONTENTdm collection and get a list of all unique values in that field.
 
 Only objects that are parent-level (that is, objects that are not children of CONTENTdm compound objects) are inspected.
 
@@ -54,13 +55,13 @@ and so on.
 To generate a report of the type of compound documents in a collection, use 'object_type' as the value of the  `--inspect` option:
 
 ```
-php cdminspect --inspect=object_type --alias=aldine
+php cdminspect --inspect=object_type --alias=vanpunk
 ```
 
 The output contains one row per object, with the object's pointer, wheterh or not it is compound or simple, and the document type seperated by commas:
 
 ```
-Analysing object types for the '/aldine' collection...
+Analysing object types for the '/vanpunk' collection...
 .....................
 240,compound,Document
 645,compound,Document
