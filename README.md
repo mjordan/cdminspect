@@ -99,6 +99,14 @@ The output for simple (i.e., single-file) objects shows the extension of the fil
 1622,simple,pdf
 ```
 
+### .cpd (compound structure) files
+
+CONTENTdm can provide the structure of a compound object in a .cpd file in either XML or JSON. cdminspector can retrieve the XML version of these files for all compound objects in a collection using the following command:
+
+``` php cdminspect --inspect=cpd_files --alias=vanpunk```
+
+A .cpd XML file will be generated and save for each compound object in the collection identified by the value of the `--alias`` option. The files are saved in a directory named using the alias (e.g., "vanpunk_cpd_files") in the same directory where `cdminspect` is run.
+
 ### Metadata field values
 
 Generating a report of field values involves two steps, 1) getting a list of CONTENTdm field 'nicknames' and 2) generating the list of unique values for a specific nickname.
