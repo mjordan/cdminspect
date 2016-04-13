@@ -229,11 +229,18 @@ function get_parent_pointer($alias, $pointer) {
 /**
  * Gets the item's compound info. "code" contains '-2' if the item is not compound.
  */
-function get_compound_object_info($alias, $pointer) {
+function get_compound_object_info($alias, $pointer, $format = 'json') {
   global $ws_url;
-  $query = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' . $pointer . '/json';
-  $json = file_get_contents($query, false, NULL);
-  return json_decode($json, true);
+  if ($format == 'json') {
+    $query = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' . $pointer . '/json';
+    $json = file_get_contents($query, false, NULL);
+    return json_decode($json, true);
+  }
+  if ($format == 'xml') {
+    $query = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' . $pointer . '/xml';
+    $xml = file_get_contents($query, false, NULL);
+    return $xml;
+  }
 }
 
 /**

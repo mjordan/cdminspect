@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * cdminspect plugin to get the cpd file for all compound objects.
+ * Puts them in a directory named alias_cpd_files.
+ */
+
+/**
+ */
+function run_batch($total_recs, $num_chunks) {
+  global $start_at;
+  global $rec_num;
+  global $chunk_size;
+  global $last_rec;
+  global $alias;
+  global $output_file_path;
+  global $email_address;
+
+  print PHP_EOL . "Retrieving CPD files for the '$alias' collection..." . PHP_EOL;
+
+  $output_dir = ltrim($alias, '/') . '_cpd_files';
+  if (!file_exists($output_dir)) {
+    mkdir($output_dir);
+  }
+
+  $rows = array();
+  for ($processed_chunks = 1; $processed_chunks <= $num_chunks; $processed_chunks++) {
+    if (!$results = query_contentdm($start_at, $processed_chunks, $num_chunks)) {
+      print "Could not connect to CONTENTdm to start retrieving chunk starting at record $start_at, moving on to next chunk" . PHP_EOL;
+    }
+    $start_at = $chunk_size * $processed_chunks + 1;
+    foreach ($results['records'] as $results_record) {
+      $rec_num++;
+      print_progress_bar($total_recs, $rec_num);
+
+      // This function, defined in this plugin, handles each record.
+      if ($compound_info = process_item($results_record)) {
+        $output_file_path = $output_dir . DIRECTORY_SEPARATOR . $results_record['pointer'] . '_cpd.xml';
+        file_put_contents($output_file_path, $compound_info);
+      }
+
+      if ($last_rec !== 0) {
+        if ($rec_num == $last_rec) {
+          exit;
+        }
+      }
+    }
+  }
+  if (isset($email_address)) {
+    $subject = "CPD files for compound objects in the '$alias' collection are in $output_dir.";
+
+    field_inspector_mail($email_address, $subject, $output_file);
+  }
+}
+
+/**
+ * Processes each record in the browse results.
+ */
+function process_item($results_record) {
+  $compound_info = get_compound_object_info($results_record['collection'], $results_record['pointer'], 'xml');
+  $cpd = new SimpleXMLElement($compound_info);
+  if (isset($cpd->type)) {
+    return $compound_info;
+  }
+}
+
