@@ -24,6 +24,7 @@ $options = getopt('', array(
   'email::',
   'output_file::',
   'error_log::',
+  'think_of_the_children::',
   'num_progress_bar_chunks::'
 ));
 
@@ -79,6 +80,13 @@ else {
   $num_progress_bar_chunks = 50;
 }
 
+if (isset($options['think_of_the_children'])) {
+  $include_children = TRUE;
+}
+else {
+  $include_children = FALSE;
+}
+
 /**********************************************************************
  * Set up some additional values for accessing the CONTENTdm web API. *
 ***********************************************************************/
@@ -108,7 +116,8 @@ $query_map = array(
     'sortby' => 'dmcreated!dmrecord',
     'maxrecs' => $chunk_size,
     'start' => $start_at,
-    // We only want parent-level items, not pages/children.
+    // We only want parent-level items, not pages/children. It appears that changing 'suppress'
+    // to 0, as documented, has no effect anyway.
     'supress' => 1,
     'docptr' => 0,
     'suggest' => 0,
@@ -199,6 +208,25 @@ function get_item_info($alias, $pointer) {
  * Gets a compound item's children pointers. $alias needs to include the leading '/'.
  */
 function get_children_pointers($alias, $pointer) {
+  global $ws_url;
+  $children_pointers = array();
+  $query_url = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' .  $pointer . '/xml';
+  $item_structure = file_get_contents($query_url);
+  $structure = simplexml_load_string($item_structure);
+  if (is_object($structure)) {
+    $pages = $structure->xpath('//page');
+    foreach ($pages as $page) {
+      $page_pointer = (string) $page->pageptr;
+      $children_pointers[] = $page_pointer;
+    }
+  }
+  return $children_pointers;
+}
+
+/**
+ * Gets a compound item's children pointers. $alias needs to include the leading '/'.
+ */
+function _get_children_pointers($alias, $pointer) {
   global $ws_url;
   $query_url = $ws_url . 'dmGetCompoundObjectInfo' . $alias . '/' .  $pointer . '/json';
   $item_structure = file_get_contents($query_url);

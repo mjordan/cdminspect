@@ -15,6 +15,7 @@ function run_batch($total_recs, $num_chunks) {
   global $alias;
   global $output_file_path;
   global $email_address;
+  global $include_children;
 
   $field_values = array();
 
@@ -31,6 +32,18 @@ function run_batch($total_recs, $num_chunks) {
 
       // This function, defined in this plugin, handles each record.
       $field_values = process_item($results_record, $nickname);
+      if ($include_children) {
+        $children = get_children_pointers($alias, $results_record['pointer']);
+        if (count($children)) {
+          foreach ($children as $child_pointer) {
+            $child_field_values = process_item(array('collection' => $alias, 'pointer' => $child_pointer), $nickname); 
+            $field_values = array_merge($field_values, $child_field_values);
+          }
+        }
+      }
+      $field_values = array_unique($field_values);
+      // print_r($field_values);
+
       print_output($field_values);
 
       if ($last_rec !== 0) {
