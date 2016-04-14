@@ -24,7 +24,7 @@ $options = getopt('', array(
   'email::',
   'output_file::',
   'error_log::',
-  'think_of_the_children::',
+  'children::',
   'num_progress_bar_chunks::'
 ));
 
@@ -63,7 +63,7 @@ if (isset($options['output_file'])) {
 else {
   $output_file = 'cdminspect_output.txt';
 }
-$header = "cdminspect output for the '$alias' collection.";
+$header = "# cdminspect output for the '$alias' collection.";
 file_put_contents($output_file, $header . $line_separator, FILE_APPEND);
 
 if (isset($options['email'])) {
@@ -80,7 +80,7 @@ else {
   $num_progress_bar_chunks = 50;
 }
 
-if (isset($options['think_of_the_children'])) {
+if (isset($options['children'])) {
   $include_children = TRUE;
 }
 else {
@@ -373,13 +373,10 @@ function get_collection_info($alias) {
 }
 
 /**
- * Print out the array of results from the plugin both to STDOUT
- * and to the output file.
+ * Append a string from a plugin to the output file.
  */
 function print_output($value) {
   global $output_file;
-  global $alias;
-  global $nickname;
   global $line_separator;
 
   // CONTENTdm uses arrays for empty field values.
@@ -387,6 +384,17 @@ function print_output($value) {
     $value = '[empty]';
   }
   file_put_contents($output_file, trim($value) . $line_separator, FILE_APPEND);
+}
+
+/**
+ * Print out the array of results from a plugin to the output file.
+ */
+function print_output_array($value) {
+  global $output_file;
+  global $line_separator;
+  foreach ($value as $row) {
+    file_put_contents($output_file, $row . $line_separator, FILE_APPEND);
+  }
 }
 
 /**
