@@ -27,7 +27,7 @@ All commands require the `--inspect` option (which tells cdminsect what to inspe
 
 `http://content.lib.sfu.ca/cdm/landingpage/collection/vanpunk`
 
-### Metadata field values
+### CONTENTdm pointers
 
 Running cdminspect with `--inspect=pointers` will generate a simple list of object pointers:
 
